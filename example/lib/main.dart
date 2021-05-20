@@ -28,6 +28,12 @@ class _MyAppState extends State<MyApp> {
   }
 
   @override
+  void didChangeDependencies() {
+    _fetchPermissionStatus();
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
@@ -36,6 +42,7 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Flutter Compass'),
         ),
         body: Builder(builder: (context) {
+          print("$_hasPermissions value of permissions");
           if (_hasPermissions) {
             return Column(
               children: <Widget>[
@@ -74,11 +81,11 @@ class _MyAppState extends State<MyApp> {
                 children: <Widget>[
                   Text(
                     '$_lastRead',
-                    style: Theme.of(context).textTheme.caption,
+                    //     style: Theme.of(context).textTheme.caption,
                   ),
                   Text(
                     '$_lastReadAt',
-                    style: Theme.of(context).textTheme.caption,
+                    //     style: Theme.of(context).textTheme.caption,
                   ),
                 ],
               ),
@@ -101,6 +108,10 @@ class _MyAppState extends State<MyApp> {
           return Center(
             child: CircularProgressIndicator(),
           );
+        }
+        if (snapshot.connectionState == ConnectionState.done) {
+          print("done snapshot");
+          return Text("done");
         }
 
         double? direction = snapshot.data!.heading;
@@ -161,7 +172,22 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _fetchPermissionStatus() {
+    Permission.location.status.then((value) {
+      print("location");
+      if (mounted) {
+        setState(() => _hasPermissions = value == PermissionStatus.granted);
+      }
+    });
+    Permission.locationAlways.status.then((value) {
+      print("Always");
+
+      if (mounted) {
+        setState(() => _hasPermissions = value == PermissionStatus.granted);
+      }
+    });
     Permission.locationWhenInUse.status.then((status) {
+      print("inUse");
+
       if (mounted) {
         setState(() => _hasPermissions = status == PermissionStatus.granted);
       }
